@@ -88,6 +88,7 @@ class HC_NODE {
 		ros::Publisher _motor_speed_pub;
         ros::Publisher _psi_pub;
         ros::Publisher _estimate_pub;
+        ros::Publisher _x_drone_state_pub;
         ros::Subscriber _odom_sub;
         ros::Subscriber _imu_sub;
         ros::Subscriber _ref_sub;
@@ -99,6 +100,7 @@ HC_NODE::HC_NODE() {
     // ROS topic initialization
     _motor_speed_pub = _nh.advertise< mav_msgs::Actuators > ("/licasa1/command/motor_speed", 1);
     _estimate_pub = _nh.advertise< std_msgs::Float64MultiArray > ("/licasa1/estimate", 1);
+    _x_drone_state_pub = _nh.advertise< std_msgs::Float64MultiArray > ("/licasa1/x_drone_state", 1);
     _psi_pub = _nh.advertise< std_msgs::Float64 > ("/licasa1/psi", 1);
 
     _odom_sub = _nh.subscribe("/licasa1/ground_truth/odometry", 0, &HC_NODE::odom_callback, this);	
@@ -263,6 +265,7 @@ void HC_NODE::ctrl_loop() {
     cout<<"OPEN LOOP START\n";
 
     std_msgs::Float64MultiArray est_msg;
+    std_msgs::Float64MultiArray x_state_msg;
 
     cout<<"Start position: "<<_p_b<<endl<<"Start orientation: "<<_eta_b<<endl;
 
@@ -445,6 +448,11 @@ void HC_NODE::ctrl_loop() {
         // }
         
         _estimate_pub.publish(est_msg);
+
+        x_state_msg.data.clear();
+        x_state_msg.data.push_back(_p_b(0));
+        x_state_msg.data.push_back(_p_b_dot(0));
+        _x_drone_state_pub.publish(x_state_msg);
 
         time = time + 1.0/RATE;
 		r.sleep();

@@ -10,7 +10,6 @@
 
 #include "geometry_msgs/Pose.h"
 #include "sensor_msgs/JointState.h"
-#include <std_msgs/Float64.h>
 #include <ros/package.h>
 
 #include "std_msgs/Float64MultiArray.h"
@@ -45,6 +44,8 @@ class CLIK_NODE {
         void joint_states_cb( sensor_msgs::JointState );
         void move_arms_cb( std_msgs::Float64 );
         void grip_cb( std_msgs::Float64 ); 
+        void x_drone_state_cb( std_msgs::Float64MultiArray ); 
+
         void goto_initial_position( double dp_l[NJ], double dp_r[NJ] );
         void ctrl_loop();
         void run();
@@ -70,10 +71,23 @@ class CLIK_NODE {
 
         double L_half;
 
+        //Variables for oscillation reduction
+        double _jDronePos;
+        double _jCablesPos;
+        double _jLeftArmPos;
+        double _jRightArmPos;
+        double _jShouldersPos;
+        double _jDroneVel;
+        double _jCablesVel;
+        double _jLeftArmVel;
+        double _jRightArmVel;
+        double _jShouldersVel;
+
         //ROS topic objects
         ros::Subscriber _js_sub;
         ros::Subscriber _move_arms_sub;
         ros::Subscriber _grip_sub;
+        ros::Subscriber _x_drone_state_sub;
 		ros::Publisher _left_cmd_pub[NJ];
         ros::Publisher _right_cmd_pub[NJ];
         ros::Publisher _activate_joywrap;
@@ -92,6 +106,7 @@ CLIK_NODE::CLIK_NODE() {
     _js_sub = _nh.subscribe("/licasa1/joint_states", 0, &CLIK_NODE::joint_states_cb, this);
     _move_arms_sub = _nh.subscribe("/licasa1/move_arms", 0, &CLIK_NODE::move_arms_cb, this);
     _grip_sub = _nh.subscribe("/licasa1/L_half", 0, &CLIK_NODE::grip_cb, this);
+    _x_drone_state_sub = _nh.subscribe("/licasa1/x_drone_state", 0, &CLIK_NODE::x_drone_state_cb, this);
 
     // Added to initialize /licasa1/estimate for rqt
     _estimate_pub = _nh.advertise< std_msgs::Float64MultiArray > ("/licasa1/estimate", 1);
@@ -153,6 +168,17 @@ CLIK_NODE::CLIK_NODE() {
     rtObj.rtU.q2r_n = def_q2r_n;
     rtObj.rtU.q3r_n = def_q3r_n;
     rtObj.rtU.q4r_n = def_q4r_n;
+
+    _jDronePos = 0;
+    _jCablesPos = 0;
+    _jLeftArmPos = 0;
+    _jRightArmPos = 0;
+    _jShouldersPos = 0;
+    _jDroneVel = 0;
+    _jCablesVel = 0;
+    _jLeftArmVel = 0;
+    _jRightArmVel = 0;
+    _jShouldersVel = 0;
 }
 
 //Callback for the joint state
@@ -165,6 +191,16 @@ void CLIK_NODE::joint_states_cb( sensor_msgs::JointState js ) {
             qr[i] = js.position[i+NJ];
             //cout<<"I HEARD "<<ql[i]<<" AND "<<qr[i]<<endl;
         }
+
+        _jCablesPos = js.position[8];
+        _jLeftArmPos = js.position[0];
+        _jRightArmPos = js.position[4];
+        _jShouldersPos = js.position[11];
+        _jCablesVel = js.velocity[8];
+        _jLeftArmVel = js.velocity[0];
+        _jRightArmVel = js.velocity[4];
+        _jShouldersVel = js.velocity[11];
+
     } else {
         //cout<<js.name[0]<<endl;
     }
@@ -179,6 +215,11 @@ void CLIK_NODE::move_arms_cb( std_msgs::Float64 f) {
         _move_arms = false;
         cout<<"ARMS NOT MOVING\n";
     }
+}
+
+void CLIK_NODE::x_drone_state_cb( std_msgs::Float64MultiArray f) {
+    _jDronePos = f.data[0];
+    _jDroneVel = f.data[1];
 }
 
 void CLIK_NODE::grip_cb( std_msgs::Float64 f) {
@@ -316,6 +357,8 @@ void CLIK_NODE::ctrl_loop() {
                 _left_cmd_pub[i].publish (left_cmd[i]);
                 _right_cmd_pub[i].publish (right_cmd[i]);
             }
+        } else {
+            // Oscillation reduction code
         }
 
         for(int i = 0; i<3; i++) {
