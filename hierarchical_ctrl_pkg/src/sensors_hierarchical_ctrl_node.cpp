@@ -452,6 +452,8 @@ void HC_NODE::ctrl_loop() {
         x_state_msg.data.clear();
         x_state_msg.data.push_back(_p_b(0));
         x_state_msg.data.push_back(_p_b_dot(0));
+        x_state_msg.data.push_back(_eta_b(1));
+        x_state_msg.data.push_back(_eta_b_dot(1));
         _x_drone_state_pub.publish(x_state_msg);
 
         time = time + 1.0/RATE;

@@ -289,7 +289,8 @@
     <child link="shoulder_link_x"/>
     <axis xyz="1 0 0"/>
     <dynamics damping="0.0" friction="0.0"/>
-    <limit effort="6.0" lower="${-150/180*pi*0}" upper="${150/180*pi*0}" velocity="6"/>
+    <limit effort="6.0" lower="${-150/180*pi}" upper="${150/180*pi}" velocity="6"/>
+    <!-- <limit effort="6.0" lower="${-150/180*pi*0}" upper="${150/180*pi*0}" velocity="6"/> -->
   </joint>
   
   <link name="shoulder_link_x">
@@ -307,6 +308,7 @@
     <child link="shoulder_link_y"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0.0" friction="0.0"/>
+    <!-- <limit effort="6.0" lower="${-150/180*pi}" upper="${150/180*pi}" velocity="6"/> -->
     <limit effort="6.0" lower="${-150/180*pi*0}" upper="${150/180*pi*0}" velocity="6"/>
   </joint>
   
@@ -614,7 +616,7 @@
     <parent link="left_forearm_link"/>
     <child link="left_eef_link"/>
   </joint>
-  
+
   <link name="left_eef_link">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -652,9 +654,9 @@
       <mass value="1e-3" />
       <inertia ixx="1e-03" ixy="0.0" ixz="0.0" iyy="1e-03" iyz="0.0" izz="1e-03"/>
     </inertial>
-  </link>
+  </link> -->
   
-  <joint name="left_eef_joint_1" type="revolute">
+  <!-- <joint name="left_eef_joint_1" type="revolute">
     <origin xyz="0 0 0"/>
     <parent link="left_eef_link"/>
     <child link="left_eef_link_1"/>
@@ -671,7 +673,7 @@
     </inertial>
   </link>  -->
 
-  <gazebo>
+  <!-- <gazebo>
     <plugin name="f3d_plugin" filename="libgazebo_ros_f3d.so">
       <robotNamespace>licasa1</robotNamespace>
       <bodyName>left_eef_link</bodyName>
@@ -685,7 +687,7 @@
       <bodyName>right_eef_link</bodyName>
       <topicName>right_eef_link/body_wrench</topicName>
     </plugin>
-  </gazebo>  
+  </gazebo> -->
 
   <!-- GRASP PLUGIN -->
   <!-- <gazebo>

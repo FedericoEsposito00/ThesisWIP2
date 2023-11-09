@@ -136,10 +136,6 @@ void JOY_WRAP::pub_ref() {
 	listener.lookupTransform("shoulder_link_y","left_eef_link",ros::Time(0), left_eef);
 	listener.lookupTransform("shoulder_link_y","right_eef_link",ros::Time(0), right_eef);
 
-	// double x = (left_eef.getOrigin().x()+right_eef.getOrigin().x())/2;
-	// double y = (left_eef.getOrigin().y()+right_eef.getOrigin().y())/2;
-	// double z = (left_eef.getOrigin().z()+right_eef.getOrigin().z())/2;
-
 	double x = 0.2494;
 	double y = 0;
 	double z = -0.2927;
@@ -163,10 +159,12 @@ void JOY_WRAP::pub_ref() {
 		if (_arms_state == 0) {
 			move_arms_msg.data = 0;
 			_move_arms_pub.publish(move_arms_msg);
+			// cout<<"Don't move arms published\n";
 			delta_x_world = delta_x_world + cos(psi)*_x_speed/RATE + sin(psi)*_y_speed/RATE;
 			delta_y_world = delta_y_world + sin(psi)*_x_speed/RATE - cos(psi)*_y_speed/RATE;
-			cout<<"delta_x_world: "<<delta_x_world<<" delta_y_world: "<<delta_y_world<<endl;
+			// cout<<"delta_x_world: "<<delta_x_world<<" delta_y_world: "<<delta_y_world<<endl;
 			delta_z_world = delta_z_world - _z_speed/RATE;
+			_trans_br.sendTransform(tf::StampedTransform(_ref_trans, ros::Time::now(), "shoulder_link_y", "ref_frame"));
 		} else {
 			move_arms_msg.data = 1;
 			_move_arms_pub.publish(move_arms_msg);
@@ -181,7 +179,7 @@ void JOY_WRAP::pub_ref() {
 			if (_ref_state == 1) {
 				delta_x_world = delta_x_world + cos(psi)*_x_speed/RATE + sin(psi)*_y_speed/RATE;
 				delta_y_world = delta_y_world + sin(psi)*_x_speed/RATE - cos(psi)*_y_speed/RATE;
-				cout<<"delta_x_world: "<<delta_x_world<<" delta_y_world: "<<delta_y_world<<endl;
+				// cout<<"delta_x_world: "<<delta_x_world<<" delta_y_world: "<<delta_y_world<<endl;
 				delta_z_world = delta_z_world - _z_speed/RATE;
 
 				x_world = x_world + cos(psi)*_x_speed/RATE + sin(psi)*_y_speed/RATE;

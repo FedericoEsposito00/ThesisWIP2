@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -133,10 +133,13 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(CLIK_node src/CLIK_node.cpp src/CLIK.cpp src/CLIK_data.cpp)
+add_executable(CLIK_node src/CLIK_node.cpp src/CLIK.cpp src/CLIK_data.cpp src/dynamicModelPlanarDualArmDroneV3.cpp src/trajectoryGeneration.cpp)
+
+# add_dependencies(dynamicModelPlanarDualArmDroneV3 trajectoryGeneration)
 
 add_executable(CLIK_node_still src/CLIK_node_still.cpp src/CLIK.cpp src/CLIK_data.cpp)
 
@@ -153,6 +156,7 @@ add_executable(CLIK_node_still src/CLIK_node_still.cpp src/CLIK.cpp src/CLIK_dat
 ## Specify libraries to link a library or executable target against
 target_link_libraries(CLIK_node
   ${catkin_LIBRARIES}
+  ${Eigen3_LIBRARIES}
 )
 
 target_link_libraries(CLIK_node_still
