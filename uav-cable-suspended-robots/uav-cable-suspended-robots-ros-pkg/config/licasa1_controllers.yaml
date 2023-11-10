@@ -17,7 +17,8 @@
     type: effort_controllers/JointPositionController
     joint: shoulder_joint_x
     # pid: {p: 10, i: 0, d: 0.01, i_clamp_min: -10000, i_clamp_max: 10000}
-    pid: {p: 682.4, i: 0, d: 0.01, i_clamp_min: -10000, i_clamp_max: 10000}
+    # pid: {p: 682.4, i: 0, d: 0.01, i_clamp_min: -10000, i_clamp_max: 10000}
+    pid: {p: 300, i: 0, d: 0.01, i_clamp_min: -10000, i_clamp_max: 10000}
 
     
   licasa1_shoulder_y_effort_pos_controller:

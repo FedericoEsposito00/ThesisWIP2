@@ -23,9 +23,9 @@
 #include "CLIK.h"   
 
 //Include other libraries
-#include "modelBasedControlPlanarDualArmDroneV3.hpp"
+#include "modelBasedControlPlanarDualArmV1.hpp"
 #include "utils_2.hpp"
-#include "dynamicModelPlanarDualArmDroneV3.hpp"
+#include "dynamicModelPlanarDualArmV1.hpp"
 #include "trajectoryGeneration.hpp"
 
 
@@ -204,14 +204,12 @@ void CLIK_NODE::Bfun(Eigen::MatrixXd& B, Eigen::VectorXd q) {
   B_row1(B,q);
   B_row2(B,q);
   B_row3(B,q);
-  B_row4(B,q);
 }
 
 void CLIK_NODE::nfun(Eigen::VectorXd& n, Eigen::VectorXd q, Eigen::VectorXd qDot) {
   n_row1(n,q,qDot);
   n_row2(n,q,qDot);
   n_row3(n,q,qDot);
-  n_row4(n,q,qDot);
 }
 
 //Callback for the joint state
@@ -351,6 +349,7 @@ void CLIK_NODE::ctrl_loop() {
     double err = 0;
     double timeStep = 0.01;
     double timeFinal = 6;
+
     Eigen::VectorXd qPassive(1);
     Eigen::VectorXd qDotPassive(1);
     Eigen::VectorXd qActive(2);
@@ -361,9 +360,8 @@ void CLIK_NODE::ctrl_loop() {
     Eigen::MatrixXd Kd(1,1);
     Eigen::MatrixXd Gp(2,2);
     Eigen::MatrixXd Gd(2,2);
-    Eigen::MatrixXd B(4,4);
-    Eigen::VectorXd n(4);
-
+    Eigen::MatrixXd B(3,3);
+    Eigen::VectorXd n(3);
     Eigen::MatrixXd Bb(1,1);
     Eigen::MatrixXd Bbm(1,2);
     Eigen::MatrixXd pinvBbm(2,1);
@@ -371,31 +369,30 @@ void CLIK_NODE::ctrl_loop() {
     Eigen::MatrixXd Bm(2,2);
     Eigen::VectorXd nb(1);
     Eigen::VectorXd nm(2);
-    Eigen::VectorXd B_hat(2);
-    Eigen::VectorXd n_hat(2);
     Eigen::MatrixXd B_tilde(2,2);
     Eigen::VectorXd n_tilde(2);
-    Eigen::VectorXd tau_tilde(4);
-    
+    Eigen::VectorXd B_hat(2);
+    Eigen::VectorXd n_hat(2);
+
     Eigen::VectorXd e(1);
     Eigen::VectorXd eDot(1);
     Eigen::VectorXd tau(2);
-
+    Eigen::VectorXd acc(3);
+    Eigen::VectorXd vel(3);
+    Eigen::VectorXd pos(3);
+    acc = Eigen::VectorXd::Zero(3);
+    vel = Eigen::VectorXd::Zero(3);
+    pos = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd tau_tilde(3);
+    tau_tilde = Eigen::VectorXd::Zero(3);
     std_msgs::Float64 jLeftCommand;
     std_msgs::Float64 jRightCommand;
-    std_msgs::Float64 PosCommand;
 
-    Eigen::VectorXd acc(4);
-    Eigen::VectorXd vel(4);
-    Eigen::VectorXd pos(4);
-    acc = Eigen::VectorXd::Zero(4);
-    vel = Eigen::VectorXd::Zero(4);
-    pos = Eigen::VectorXd::Zero(4);
+    // // Data save variables
+    // std::vector<double> q1Saved, q2Saved, tauSaved;
 
-    Kp.diagonal() << 1;
-    Kd.diagonal() << 0.01;
-    Gp.diagonal() << 1, 1;
-    Gd.diagonal() << 0.01, 0.01;
+    Kp.diagonal() << 0.1;
+    Kd.diagonal() << 0; //sqrt(4*Kp(0,0));
 
     cout << "Press enter to start the trajectory execution" << endl;
 	getline(cin, ln);
@@ -459,6 +456,7 @@ void CLIK_NODE::ctrl_loop() {
             if (first_time) {
 
                 cubicVelTraj(tDes, qDesPassive, qDotDesPassive, qDDotDesPassive, timeStep, timeFinal, 0.0, 0.0, 0.0, 0.0);
+                // dampedSinusoidalTraj(tDes, qDesPassive, qDotDesPassive, qDDotDesPassive, 0.001, 20, 0.3, 0.8, 0.0, 0.6);
 
                 oo = 0;
                 first_time = false;
@@ -468,42 +466,34 @@ void CLIK_NODE::ctrl_loop() {
 
                 // cout<<"Not first time oscillations\n";
 
-                Eigen::VectorXd q(5);
-                Eigen::VectorXd qDot(5);
-                Eigen::VectorXd qInterest(3);
-                Eigen::VectorXd qDotInterest(3);
+                Eigen::VectorXd q(3);
+                Eigen::VectorXd qDot(3);
                 Eigen::VectorXd qPassive(1);
                 Eigen::VectorXd qDotPassive(1);
                 Eigen::VectorXd qActive(2);
                 Eigen::VectorXd qDotActive(2);
 
-                _jCablesPos = _jCablesPos1 - _jCablesPos2;
-                _jCablesVel = _jCablesVel1 - _jCablesVel2;
+                cout<<"_jCablesPos1 (cables): "<<_jCablesPos1<<endl;
+                cout<<"_jCablesPos2 (drone pitch): "<<_jCablesPos2<<endl;
+
+                _jCablesPos = _jCablesPos1 + _jCablesPos2;
+                _jCablesVel = _jCablesVel1 + _jCablesVel2;
 
                 // cout<<"Cables angle: "<<_jCablesPos1<<"; Drone angle: "<<_jCablesPos2<<endl;
 
                 // cout<<"jDronePos: "<<_jDronePos<<endl<<"jCablesPos: "<<_jCablesPos<<endl<<"jShouldersPos: "<<_jShouldersPos<<endl<<"jLeftArmPos: "<<_jLeftArmPos<<endl<<"jRightArmPos: "<<_jRightArmPos<<endl;
 
-                q << _jDronePos, -_jCablesPos, _jCablesPos, _jLeftArmPos, _jRightArmPos;
-                qDot << _jDroneVel, -_jCablesVel, _jCablesVel, _jLeftArmVel, _jRightArmVel;
+                q << _jCablesPos, _jLeftArmPos, _jRightArmPos;
+                qDot << _jCablesVel, _jLeftArmVel, _jRightArmVel;
                 //cout << "q: " << q.transpose() << endl;
 
-                qInterest << q(0), q(1), q(3);
-                qDotInterest << qDot(0), qDot(1), qDot(3);
-
-                cout<<"qInterest: "<<qInterest.transpose()<<endl;
-                cout<<"qDotInterest: "<<qDotInterest.transpose()<<endl;
-
-                // qInterest << -0.010246, -0.0476165, -1.05927;
-                // qDotInterest << -0.0643891, -0.204025, -2.38112;
-
-                qPassive << q(1);
-                qDotPassive << qDot(1);
+                qPassive << q(0);
+                qDotPassive << qDot(0);
 
                 // cout << "_jCablesPos: " << qPassive.transpose() << endl;
 
-                qActive = q.tail(2);
-                qDotActive = qDot.tail(2);
+                qActive << q(1), q(2);
+                qDotActive << qDot(1), qDot(2);
 
                 Eigen::VectorXd qDesPassiveEigen(1);
                 Eigen::VectorXd qDotDesPassiveEigen(1);
@@ -515,10 +505,9 @@ void CLIK_NODE::ctrl_loop() {
 
                 // Computation auxiliar input
                 e = qDesPassiveEigen - qPassive;
-                e(0) = e(0) + 0.00194396;             //Correction because at steady state e doesn't go to 0
+                e(0) = e(0) - 0.00195;             //Correction because at steady state e doesn't go to 0 due the angle of the cables
                 // err = err*0.999 + e[0]*0.001;
                 // eInt += e * timeStep;
-
 
                 std::cout << "Error: " << e.transpose() << std::endl;
                 std_msgs::Float64 err_msg;
@@ -538,22 +527,20 @@ void CLIK_NODE::ctrl_loop() {
                 //if(e[0]<0.01)  return;
 
                 // Computation dynamic model
-                B = Eigen::MatrixXd::Zero(4,4);
-                n = Eigen::VectorXd::Zero(4);
-                Bfun(B,qInterest);
-                nfun(n,qInterest,qDotInterest);
+                B = Eigen::MatrixXd::Zero(3,3);
+                n = Eigen::VectorXd::Zero(3);
+                Bfun(B,q);
+                nfun(n,q,qDot);
 
-                // cout<<"qInterest: "<<qInterest.transpose()<<endl;
-                // cout<<"qDotInterest: "<<qDotInterest.transpose()<<endl;
                 // cout<<"B: "<<B<<endl;
                 // cout<<"n: "<<n<<endl;
 
                 // Matrix decomposition
-                Bb = B.block<1,1>(1,1);
-                Bbm = B.block<1,2>(1,2);
+                Bb = B.block<1,1>(0,0);
+                Bbm = B.block<1,2>(0,1);
                 Bmb = Bbm.transpose();
-                Bm = B.block<2,2>(2,2);
-                nb << n(1);
+                Bm = B.block<2,2>(1,1);
+                nb = n.head(1);
                 nm = n.tail(2);
                 pinvBbm = pseudoinverse(Bbm,0);
 
@@ -561,61 +548,63 @@ void CLIK_NODE::ctrl_loop() {
                 B_hat = Bmb-Bm*pinvBbm*Bb;
                 n_hat = nm-Bm*pinvBbm*nb;
 
-                // Composed matrix computation
-                B_tilde = Bm - Bmb*Bb.inverse()*Bbm;
-                n_tilde = nm - Bmb*Bb.inverse()*nb;
+                cout<<"n_hat: "<<n_hat.transpose()<<endl;
 
-                // cout<<"n_tilde: "<<n_tilde.transpose()<<endl;
+                // Control law
+                tau = B_hat*in + n_hat;
 
-                // Control law - Damped pseudoinverse
-                y = -pinvBbm*(Bb*in+nb) + (Eigen::MatrixXd::Identity(2,2)-pinvBbm*Bbm)*(Gd*(-qDotActive) + Gp*(-qActive));
-                tau = B_tilde*y + n_tilde;
-                //tau = B_hat*in + n_hat;
-            
-                // cout << "tau " << tau.transpose() << endl;
-                //Torque -> position
+                cout<<"tau: "<<tau.transpose()<<endl;
 
-                tau_tilde << 0, 0, tau;                                                        //Inverto il modello dinamico
+                tau_tilde << 0, tau;                                                        //Inverto il modello dinamico
                 acc=B.inverse()*(tau_tilde-n);
 
                 vel += acc*timeStep;                                                        //Metodo di integrazione classico
 
-                if(vel[2]<=-1.7)vel[2]=-1.7;                                                //Saturazione velocità
-                if(vel[2]>=1.7) vel[2]=1.7;
-                if(vel[3]>=1.7) vel[3]=1.7;
-                if(vel[3]<=-1.7)vel[3]=-1.7;
+                // if(vel[1]<=-1.7)vel[1]=-1.7;                                                //Saturazione velocità
+                // if(vel[1]>=1.7) vel[1]=1.7;
+                // if(vel[2]>=1.7) vel[2]=1.7;
+                // if(vel[2]<=-1.7)vel[2]=-1.7;
 
                 pos += vel*timeStep;    
+                _listener.lookupTransform("world","shoulder_link_y",ros::Time(0), _tf_ref);
+                tf::Matrix3x3 mat( _tf_ref.getRotation() ); // quaternion to RPY
+                double roll, pitch, yaw;
+				mat.getRPY(roll, pitch, yaw);
+                cout<<"pitch: "<<pitch<<endl;
+
+
 
                 //Output saturation:
-                if(pos[2]<=-1.57079632679) pos[2]=-1.57079632679;        //verso dentro fino a 10°
-                if(pos[2]>=1.57079632679) pos[2]=1.57079632679;          //verso fuori fino a 90°
-                if(pos[3]>=1.57079632679) pos[3]=1.57079632679;
-                if(pos[3]<=-1.57079632679) pos[3]=-1.57079632679;
+                // if(pos[1]<=-1.5) pos[1]=-1.5;        //verso dentro fino a 10°
+                // if(pos[1]>=1.5) pos[1]=1.5;          //verso fuori fino a 90°
+                // if(pos[2]>=1.5) pos[2]=1.5;
+                // if(pos[2]<=-1.5) pos[2]=-1.5;
                 
-                // std::cout << "acc: " << acc.transpose() << std::endl;
-                // std::cout << "vel: " << vel.transpose() << std::endl;
-                // std::cout << "pos: " << pos.transpose() << std::endl;
+                std::cout << "acc: " << acc.transpose() << std::endl;
+                std::cout << "vel: " << vel.transpose() << std::endl;
+                std::cout << "pos: " << pos.transpose() << std::endl;
 
                 //Printing output
                 Eigen::VectorXd q0(2);
                 Eigen::VectorXd q0d(2);
-                q0 << pos[2], pos[3];
-                q0d << vel[2], vel[3];
-                //cout << "pos: " << q0.transpose() << endl;
+                q0 << pos[1], pos[2];
+                q0d << vel[1], vel[2];
+                // cout << "pos: " << q0.transpose() << endl;
                 //cout << "vel: " << q0d.transpose() << endl;
 
                 // Publishing the commands
-                jLeftCommand.data = pos[2];            //rad    (left +, right -)
-                jRightCommand.data = pos[3];
+                jLeftCommand.data = pos[1];            //rad    (left +, right -)
+                jRightCommand.data = pos[2];
 
                 // jLeftCommand.data = in[0];            
                 // jRightCommand.data = in[0];
 
-                //jLeftCommand.data = 0.3;
-                //jRightCommand.data = -0.3;
+                // jLeftCommand.data = 0.3;
+                // jRightCommand.data = 0.3;
                 _left_cmd_pub[0].publish(jLeftCommand);
                 _right_cmd_pub[0].publish(jRightCommand);
+
+                cout<<"Commands published\n";
                 // cout<<pos[2]<<"; "<<pos[3]<<endl;
                 
                 oo++;

@@ -137,7 +137,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(CLIK_node src/CLIK_node.cpp src/CLIK.cpp src/CLIK_data.cpp src/dynamicModelPlanarDualArmDroneV3.cpp src/trajectoryGeneration.cpp)
+add_executable(CLIK_node src/CLIK_node.cpp src/CLIK.cpp src/CLIK_data.cpp src/dynamicModelPlanarDualArmV1.cpp src/trajectoryGeneration.cpp)
 
 # add_dependencies(dynamicModelPlanarDualArmDroneV3 trajectoryGeneration)
 
