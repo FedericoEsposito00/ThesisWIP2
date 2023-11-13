@@ -391,10 +391,10 @@ void CLIK_NODE::ctrl_loop() {
     // // Data save variables
     // std::vector<double> q1Saved, q2Saved, tauSaved;
 
-    Kp.diagonal() << 0.1;
-    Kd.diagonal() << 0; //sqrt(4*Kp(0,0));
+    Kp.diagonal() << 100;
+    Kd.diagonal() << sqrt(4*Kp(0,0));
 
-    cout << "Press enter to start the trajectory execution" << endl;
+    cout << "Press enter to start the oscillation reduction" << endl;
 	getline(cin, ln);
 
     while(ros::ok()) {
@@ -423,11 +423,30 @@ void CLIK_NODE::ctrl_loop() {
         
         // If _move_arms is false CLIK isn't called, so the joints keep on following the previous reference
         if (_move_arms == true) { 
-            first_time = true;
-            rtObj.step();
 
             std_msgs::Float64 left_cmd[NJ];
             std_msgs::Float64 right_cmd[NJ];
+
+            if (first_time == false) {
+
+                left_cmd[0].data = 0;
+                left_cmd[1].data = 0;
+                left_cmd[2].data = 0;
+                left_cmd[3].data = 0;
+                right_cmd[0].data = 0;
+                right_cmd[1].data = 0;
+                right_cmd[2].data = 0;
+                right_cmd[3].data = 0;
+
+                for(int i=0; i<NJ; i++) {
+                    _left_cmd_pub[i].publish (left_cmd[i]);
+                    _right_cmd_pub[i].publish (right_cmd[i]);
+                }
+
+                sleep(2);
+            }
+            first_time = true;
+            rtObj.step();
 
             left_cmd[0].data = rtObj.rtY.q1l_d;
             left_cmd[1].data = rtObj.rtY.q2l_d;
@@ -560,10 +579,10 @@ void CLIK_NODE::ctrl_loop() {
 
                 vel += acc*timeStep;                                                        //Metodo di integrazione classico
 
-                // if(vel[1]<=-1.7)vel[1]=-1.7;                                                //Saturazione velocità
-                // if(vel[1]>=1.7) vel[1]=1.7;
-                // if(vel[2]>=1.7) vel[2]=1.7;
-                // if(vel[2]<=-1.7)vel[2]=-1.7;
+                if(vel[1]<=-1.7)vel[1]=-1.7;                                                //Saturazione velocità
+                if(vel[1]>=1.7) vel[1]=1.7;
+                if(vel[2]>=1.7) vel[2]=1.7;
+                if(vel[2]<=-1.7)vel[2]=-1.7;
 
                 pos += vel*timeStep;    
                 _listener.lookupTransform("world","shoulder_link_y",ros::Time(0), _tf_ref);

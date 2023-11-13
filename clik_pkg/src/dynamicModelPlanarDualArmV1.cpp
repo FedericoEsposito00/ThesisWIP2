@@ -1,16 +1,16 @@
 #include "dynamicModelPlanarDualArmV1.hpp"
 
-// double mC = 1;
-// double mA = 0.5;
-// double LC = 1;
-// double off = 0.14;
-// double iCxx = 0.2;
-// double iAxx = 0.1;
-// double lCz = 0.5;
-// double lAz = 0.25;
-// double fvC = 0.1;
-// double fvA = 0.1;
-// double g0 = 9.8;
+// #define mC 1
+// #define mA 0.5
+// #define LC 1
+// #define off 0.14
+// #define iCxx 0.2
+// #define iAxx 0.1
+// #define lCz 0.5
+// #define lAz 0.25
+// #define fvC 0.1
+// #define fvA 0.1
+// #define g0 9.8
 
 #define mC 1.917
 #define mA 0.799
@@ -21,7 +21,7 @@
 #define lCz 0.9992
 #define lAz 0.1454
 #define fvC 1.311
-#define fvA 0
+#define fvA 0.1
 #define g0 9.8
 
 
