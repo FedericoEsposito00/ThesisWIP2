@@ -16,7 +16,7 @@ using namespace std;
 
 class PUB_TRA {
 	public:
-		PUB_TRA();
+		PUB_TRA(int mode);
 		void cb(std_msgs::Float64MultiArray::ConstPtr msg);
 		void control_cb(std_msgs::Float64MultiArray::ConstPtr msg);
 		void shared_control_cb(std_msgs::Float64MultiArray::ConstPtr msg);
@@ -53,22 +53,28 @@ class PUB_TRA {
 
 		ros::NodeHandle _nh;
 		ros::Publisher _topic_pub;
+		ros::Publisher _delta_pub;
 		ros::Subscriber _topic_sub;
 		ros::Subscriber _shared_control_sub;
 		ros::Subscriber _activate_control_sub;
 		ros::Rate _rate;
 };
 
-PUB_TRA::PUB_TRA(): _rate(RATE) {
+PUB_TRA::PUB_TRA(int mode): _rate(RATE) {
 	_topic_sub = _nh.subscribe("/licasa1/estimate", 1, &PUB_TRA::cb, this);
 	_topic_pub = _nh.advertise< std_msgs::Float64MultiArray > ("/licasa1/ref_topic", 1);
+	_delta_pub = _nh.advertise< std_msgs::Float64MultiArray > ("/licasa1/delta", 1);
 	_activate_control_sub = _nh.subscribe("/licasa1/activate_control", 1, &PUB_TRA::control_cb, this);
 	_shared_control_sub = _nh.subscribe("/licasa1/shared_control", 1, &PUB_TRA::shared_control_cb, this);
 
 	ifstream ref;
 
 	string pkg_loc = ros::package::getPath("hierarchical_ctrl_pkg");
-	ref.open(pkg_loc + "/UAV.txt", ios::in); 
+	if (mode == 1) {
+		ref.open(pkg_loc + "/UAV_grasp.txt", ios::in); 
+	} else {
+		ref.open(pkg_loc + "/UAV_push.txt", ios::in); 
+	}
 
 	if (!ref.is_open()) {
 		cout<<"Error opening the file!";
@@ -200,6 +206,7 @@ void PUB_TRA::pub_trajectory() {
 				delta_x_send = 0;
 			} else {
 				delta_x_send = 0.995*delta_x_send;
+				cout<<"delta_x_send: "<<delta_x_send<<endl;
 			}
 			err_y = 0;
 			err_y_int = 0;
@@ -208,9 +215,8 @@ void PUB_TRA::pub_trajectory() {
 				delta_y_send = 0;
 			} else {
 				delta_y_send = 0.995*delta_y_send;
+				cout<<"delta_y_send: "<<delta_y_send<<endl;
 			}
-			cout<<"delta_y_send: "<<delta_y_send<<endl;
-			cout<<"delta_x_send: "<<delta_x_send<<endl;
 		}
 
 		ref_msg.data.clear();
@@ -231,6 +237,15 @@ void PUB_TRA::pub_trajectory() {
 
 		_topic_pub.publish(ref_msg);
 
+		std_msgs::Float64MultiArray delta_msg;
+		delta_msg.data.clear();
+		delta_msg.data.push_back(delta_x_send);
+		delta_msg.data.push_back(delta_y_send);
+		delta_msg.data.push_back(delta_x_send_shared);
+		delta_msg.data.push_back(delta_y_send_shared);
+
+		_delta_pub.publish(delta_msg);
+
 		// cout<<"REF PUBLISHED\n";
 
 		if (ii < N-1 && forward == true) {
@@ -248,11 +263,28 @@ void PUB_TRA::pub_trajectory() {
 
 int main( int argc, char** argv ) {
 
+	int mode = 0; // 0 = push, 1 = grasp
+	if (argc==2) {
+        mode = atof(argv[1]);
+		if (mode != 0 && mode != 1) {
+			mode = 0;
+			cout<<"Error in the arguments, using default: \n";
+		}
+    } else {
+		cout<<"Error in the arguments, using default: \n";
+	}
+	cout<<"Selected ";
+	if (mode == 1) {
+		cout<<"Grasp\n";
+	} else {
+		cout<<"Push\n";
+	}
+
 	//Init the ros node with name
 	ros::init(argc, argv, "PublishTrajectory");
 	ROS_INFO("TRAJECTORY PUBLISHER STARTED\n");
 
-	PUB_TRA pb;
+	PUB_TRA pb(mode);
 	
 	ros::spin();
 

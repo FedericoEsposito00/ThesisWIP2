@@ -3,7 +3,7 @@
 <!-- Convenience launch file to start the whole simulation --> 
 <launch>
 
-	<include file="$(find rotors_gazebo)/launch/licasa1_no_uav_controller.launch">
+	<include file="$(find rotors_gazebo)/launch/licasa1_no_uav_controller_grasp.launch">
 	</include>
 
 	<include file="$(find rotors_gazebo)/launch/licasa1_control.launch"> 

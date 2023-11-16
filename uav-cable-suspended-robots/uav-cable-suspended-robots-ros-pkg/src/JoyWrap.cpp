@@ -54,7 +54,7 @@ JOY_WRAP::JOY_WRAP(): _rate(RATE) {
 	_y_speed = 0;
 	_z_speed = 0;
 	_ref_state = _old_ref_state = 0;
-	_arms_state = _old_arms_state = 0;
+	_arms_state = _old_arms_state = 1;
 	_3_button = _old_3_button = 0;
 	_4_button = _old_4_button = 0;
 	_active = false;
@@ -90,11 +90,11 @@ void JOY_WRAP::cb(sensor_msgs::Joy::ConstPtr msg) {
 		cout<<L_half<<endl;
 	}
 
-	if (_4_button == 1 && _old_4_button == 0) {
-		_arms_state = (_arms_state + 1)%2;
-		cout<<"ARMS STATE: "<<_arms_state<<endl;
-	}
-	_old_4_button = _4_button;
+	// if (_4_button == 1 && _old_4_button == 0) {
+	// 	_arms_state = (_arms_state + 1)%2;
+	// 	cout<<"ARMS STATE: "<<_arms_state<<endl;
+	// }
+	// _old_4_button = _4_button;
 
 	if (_3_button == 1 && _old_3_button == 0 && _arms_state == 1) {
 		_ref_state = (_ref_state + 1)%2;
@@ -126,7 +126,7 @@ void JOY_WRAP::pub_ref() {
 		cout<<_active<<endl;
 		sleep(1);
 	}
-	sleep(5);
+	//sleep(5);
 	cout<<"JOYWRAP STARTED FROM CLIK\n";
 	
 	while (!listener.waitForTransform("shoulder_link_y", "left_eef_link", ros::Time(0), ros::Duration(1)) || !listener.waitForTransform("world", "right_eef_link", ros::Time(0), ros::Duration(1))) {
@@ -156,7 +156,7 @@ void JOY_WRAP::pub_ref() {
 	tf::Transform _left_ref_trans;
 	std_msgs::Float64 move_arms_msg;
 	while (ros::ok()) {
-		if (_arms_state == 0) {
+		if (_arms_state == 0) { // The oscillation reduction is skipped, so this if is always avoided
 			move_arms_msg.data = 0;
 			_move_arms_pub.publish(move_arms_msg);
 			// cout<<"Don't move arms published\n";

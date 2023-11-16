@@ -1,28 +1,28 @@
 #include "dynamicModelPlanarDualArmV1.hpp"
 
-// #define mC 1
-// #define mA 0.5
-// #define LC 1
-// #define off 0.14
-// #define iCxx 0.2
-// #define iAxx 0.1
-// #define lCz 0.5
-// #define lAz 0.25
-// #define fvC 0.1
-// #define fvA 0.1
-// #define g0 9.8
-
-#define mC 1.917
-#define mA 0.799
+#define mC 1
+#define mA 0.5
 #define LC 1
 #define off 0.14
-#define iCxx 1.0927
-#define iAxx 0.017011890024962
-#define lCz 0.9992
-#define lAz 0.1454
-#define fvC 1.311
+#define iCxx 0.2
+#define iAxx 0.1
+#define lCz 0.5
+#define lAz 0.25
+#define fvC 0.1
 #define fvA 0.1
 #define g0 9.8
+
+// #define mC 1.917
+// #define mA 0.799
+// #define LC 1
+// #define off 0.14
+// #define iCxx 1.0927
+// #define iAxx 0.017011890024962
+// #define lCz 0.9992
+// #define lAz 0.1454
+// #define fvC 1.311
+// #define fvA 0.05
+// #define g0 9.8
 
 
 void B_row1(Eigen::MatrixXd& B, Eigen::VectorXd qVec) {

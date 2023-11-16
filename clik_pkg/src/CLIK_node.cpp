@@ -243,7 +243,7 @@ void CLIK_NODE::move_arms_cb( std_msgs::Float64 f) {
         _move_arms = true;
         // cout<<"ARMS MOVING\n";
     } else {
-        _move_arms = false;
+        _move_arms = true; // DEBUG: skip oscillation reduction
         // cout<<"ARMS NOT MOVING\n";
     }
 }
@@ -316,7 +316,7 @@ void CLIK_NODE::ctrl_loop() {
 	right_i_cmd[3] = 0;
 
     //Lock the code to start manually the execution of the trajectory
-	cout << "Press enter to start the trajectory execution" << endl;
+	cout << "Press enter to bring the arms to their initial position" << endl;
 	string ln;
 	getline(cin, ln);
 
@@ -391,11 +391,13 @@ void CLIK_NODE::ctrl_loop() {
     // // Data save variables
     // std::vector<double> q1Saved, q2Saved, tauSaved;
 
-    Kp.diagonal() << 100;
-    Kd.diagonal() << sqrt(4*Kp(0,0));
+    Kp.diagonal() << 10;
+    Kd.diagonal() << 1; //sqrt(4*Kp(0,0));
 
-    cout << "Press enter to start the oscillation reduction" << endl;
-	getline(cin, ln);
+    // cout<<"Move arms: "<<_move_arms<<endl;
+
+    // cout << "Press enter to activate the control of the arms" << endl;
+	// getline(cin, ln);
 
     while(ros::ok()) {
         //_activate_joywrap.publish(joywrap_msg);
@@ -443,7 +445,7 @@ void CLIK_NODE::ctrl_loop() {
                     _right_cmd_pub[i].publish (right_cmd[i]);
                 }
 
-                sleep(2);
+                //sleep(0.1);
             }
             first_time = true;
             rtObj.step();
