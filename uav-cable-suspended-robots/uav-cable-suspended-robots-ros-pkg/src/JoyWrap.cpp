@@ -71,8 +71,8 @@ JOY_WRAP::JOY_WRAP(): _rate(RATE) {
 
 //Callback function: the input of the function is the data to read
 void JOY_WRAP::cb(sensor_msgs::Joy::ConstPtr msg) {
-	_y_speed = msg->axes[4]*_rescaleValue; //[0]
-	_z_speed = msg->axes[5]*_rescaleValue; //[1]
+	_y_speed = msg->axes[0]*_rescaleValue; //[4]
+	_z_speed = msg->axes[1]*_rescaleValue; //[5] if using buttons
 	_x_speed = msg->axes[3]*_rescaleValue;
 
 	_3_button = msg->buttons[2];
