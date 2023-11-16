@@ -39,9 +39,9 @@ The sticks of the joystick move the reference frame that the end effectors try t
 The joystick must be set to analog.
 From the point of view of the drone, the x axis of the reference frame points forward, the z axis points upwards and the y axis points left.
 The left stick of the joystick controls the movements in the y-z plane; the right stick of the joystick controls the movements along the x axis.
-The 1st button (equivalent to the triangle button on a playstation controller) decreases the distance between the arms;
-The 2nd button (equivalent to the circle button on a playstation controller) increases the distance between the arms;
-The 3rd button (equivalent to the cross button on a playstation controller) changes the arms' control mode, changing the value of "ref state".
+The 1st button (X button on the logitech joystick) decreases the distance between the arms;
+The 2nd button (A button on the logitech joystick) increases the distance between the arms;
+The 3rd button (B button on the logitech joystick) changes the arms' control mode, changing the value of "ref state".
 When "ref state = 0" the movement of the arms doesn't affect the movement of the drone;
 When "ref state = 1" the movement of the arms also controls the drone through the shared-control algorithm.
 
