@@ -7,6 +7,8 @@
 		  args="-param robot_description_cube_goal
 		  -urdf 
 		  -model cube_goal" />
+		  
+    <node pkg="tf" type="static_transform_publisher" name="cube_goal" args="3.5 0 0.05 0 0 0 world cube_goal 100"/> 
 
     <!-- <node name="licasa1_sensor_wall_spawn" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
 		  args="-param robot_description_sensor_wall

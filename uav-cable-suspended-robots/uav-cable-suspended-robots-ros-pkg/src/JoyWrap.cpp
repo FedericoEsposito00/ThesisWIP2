@@ -71,8 +71,8 @@ JOY_WRAP::JOY_WRAP(): _rate(RATE) {
 
 //Callback function: the input of the function is the data to read
 void JOY_WRAP::cb(sensor_msgs::Joy::ConstPtr msg) {
-	_y_speed = msg->axes[0]*_rescaleValue; //[4]
-	_z_speed = msg->axes[1]*_rescaleValue; //[5] if using buttons
+	_y_speed = msg->axes[4]*_rescaleValue; //[4] if using buttons, 0 if using logitech joystick
+	_z_speed = msg->axes[5]*_rescaleValue; //[5] if using buttons, 1 if using logitech joystick
 	_x_speed = msg->axes[3]*_rescaleValue;
 
 	_3_button = msg->buttons[2];
@@ -90,11 +90,11 @@ void JOY_WRAP::cb(sensor_msgs::Joy::ConstPtr msg) {
 		cout<<L_half<<endl;
 	}
 
-	// if (_4_button == 1 && _old_4_button == 0) {
-	// 	_arms_state = (_arms_state + 1)%2;
-	// 	cout<<"ARMS STATE: "<<_arms_state<<endl;
-	// }
-	// _old_4_button = _4_button;
+	if (_4_button == 1 && _old_4_button == 0) {
+		_arms_state = (_arms_state + 1)%2;
+		cout<<"ARMS STATE: "<<_arms_state<<endl;
+	}
+	_old_4_button = _4_button;
 
 	if (_3_button == 1 && _old_3_button == 0 && _arms_state == 1) {
 		_ref_state = (_ref_state + 1)%2;

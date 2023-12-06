@@ -55,6 +55,7 @@ class PUB_TRA {
 		ros::Publisher _topic_pub;
 		ros::Publisher _delta_pub;
 		ros::Subscriber _topic_sub;
+		ros::Subscriber _psi_sub;
 		ros::Subscriber _shared_control_sub;
 		ros::Subscriber _activate_control_sub;
 		ros::Rate _rate;
@@ -62,6 +63,7 @@ class PUB_TRA {
 
 PUB_TRA::PUB_TRA(int mode): _rate(RATE) {
 	_topic_sub = _nh.subscribe("/licasa1/estimate", 1, &PUB_TRA::cb, this);
+	_psi_sub = _nh.subscribe("/licasa1/psi", 1, &PUB_TRA::psi_cb, this);
 	_topic_pub = _nh.advertise< std_msgs::Float64MultiArray > ("/licasa1/ref_topic", 1);
 	_delta_pub = _nh.advertise< std_msgs::Float64MultiArray > ("/licasa1/delta", 1);
 	_activate_control_sub = _nh.subscribe("/licasa1/activate_control", 1, &PUB_TRA::control_cb, this);
@@ -221,9 +223,14 @@ void PUB_TRA::pub_trajectory() {
 
 		ref_msg.data.clear();
 		// ref_msg.data.push_back(P_x[ii] + delta_x_send*cos(P_psi[ii]) - delta_y_send*sin(P_psi[ii]) + delta_x_send_shared*cos(P_psi[ii]) - delta_y_send_shared*sin(P_psi[ii]));
-		ref_msg.data.push_back(P_x[ii] + delta_x_send*cos(psi) - delta_y_send*sin(psi) + delta_x_send_shared*cos(psi) - delta_y_send_shared*sin(psi));
+		ref_msg.data.push_back(P_x[ii] + delta_x_send*cos(psi) - delta_y_send*sin(psi) + delta_x_send_shared);
+
+		// cout<<"delta_x_send_shared: "<<delta_x_send_shared<<endl;
+		// cout<<"delta_x_send_shared*cos(psi) - delta_y_send_shared*sin(psi): "<<delta_x_send_shared*cos(psi) - delta_y_send_shared*sin(psi)<<endl;
+		// cout<<"psi: "<<psi<<endl;
+
 		// ref_msg.data.push_back(P_y[ii] + delta_x_send*sin(P_psi[ii]) + delta_y_send*cos(P_psi[ii]) + delta_x_send_shared*sin(P_psi[ii]) + delta_y_send_shared*cos(P_psi[ii]));
-		ref_msg.data.push_back(P_y[ii] + delta_x_send*sin(psi) + delta_y_send*cos(psi) + delta_x_send_shared*sin(psi) + delta_y_send_shared*cos(psi));
+		ref_msg.data.push_back(P_y[ii] + delta_x_send*sin(psi) + delta_y_send*cos(psi) + delta_y_send_shared);
 		ref_msg.data.push_back(P_z[ii] + delta_z_send_shared);
 		ref_msg.data.push_back(P_psi[ii]);
 		ref_msg.data.push_back(P_d_x[ii]);

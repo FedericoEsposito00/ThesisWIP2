@@ -11,8 +11,8 @@ using namespace std;
 class CUBETFPUB {
 	public:
 		CUBETFPUB();
-		void cb(gazebo_msgs::ModelStates::ConstPtr msg);
 		void pub_tf();
+		void cb(gazebo_msgs::ModelStates::ConstPtr msg);
 	private:
 		double x;
 		double y;
@@ -44,7 +44,7 @@ void CUBETFPUB::cb(gazebo_msgs::ModelStates::ConstPtr msg) {
 	int cube_pos = -1;
 	// int N = sizeof(msg->name)/sizeof(msg->name[0]);
 	// cout<<"There are "<<N<<" models\n";
-	int N = 4;
+	int N = 5;
 	for (int i = 0; i < N; i++) {
 		char t;
 		char temp[100];

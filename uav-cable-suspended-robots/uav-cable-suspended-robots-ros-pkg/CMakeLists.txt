@@ -152,6 +152,7 @@ add_executable(JoyWrap_uav src/JoyWrap.cpp)
 add_executable(BoundedJoyWrap_uav src/BoundedJoyWrap.cpp)
 add_executable(SensorFilter_uav src/SensorFilter.cpp)
 add_executable(CubeTfPub_uav src/CubeTfPub.cpp)
+add_executable(CubeTfPubTopic_uav src/CubeTfPubTopic.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -175,6 +176,7 @@ target_link_libraries(JoyWrap_uav ${catkin_LIBRARIES})
 target_link_libraries(BoundedJoyWrap_uav ${catkin_LIBRARIES})
 target_link_libraries(SensorFilter_uav ${catkin_LIBRARIES})
 target_link_libraries(CubeTfPub_uav ${catkin_LIBRARIES})
+target_link_libraries(CubeTfPubTopic_uav ${catkin_LIBRARIES})
 
 #############
 ## Install ##
