@@ -1,7 +1,7 @@
 <-- HOW TO LAUNCH THE SIMULATIONS -->
 
 Push wall task:
-1) Open a terminal and tun "roslaunch uav-cable-suspended-robots-ros-pkg push_wall.launch"
+1) Open a terminal and run "roslaunch uav-cable-suspended-robots-ros-pkg push_wall.launch"
 2) Once Gazebo opens, unpause the simulation
 3) Wait until the joint controllers are loaded (indicated by the terminal writing "0" repeatedly)
 4) Press "enter" on the previous terminal to bring the arms to their initial position
